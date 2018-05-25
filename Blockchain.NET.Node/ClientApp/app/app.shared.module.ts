@@ -3,19 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule } from '@angular/router';
+import { InfiniteScrollModule } from 'angular2-infinite-scroll';
 
 import { AppComponent } from './components/app/app.component';
 import { NavMenuComponent } from './components/navmenu/navmenu.component';
 import { WalletComponent } from './components/wallet/wallet.component';
-import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
-import { CounterComponent } from './components/counter/counter.component';
+import { BlockchainComponent } from './components/blockchain/blockchain.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         NavMenuComponent,
-        CounterComponent,
-        FetchDataComponent,
+        BlockchainComponent,
         WalletComponent
     ],
     imports: [
@@ -23,12 +22,12 @@ import { CounterComponent } from './components/counter/counter.component';
         HttpModule,
         FormsModule,
         RouterModule.forRoot([
-            { path: '', redirectTo: 'wallet', pathMatch: 'full' },
+            { path: '', redirectTo: 'blockchain', pathMatch: 'full' },
             { path: 'wallet', component: WalletComponent },
-            { path: 'counter', component: CounterComponent },
-            { path: 'fetch-data', component: FetchDataComponent },
+            { path: 'blockchain', component: BlockchainComponent },
             { path: '**', redirectTo: 'home' }
-        ])
+        ]),
+        InfiniteScrollModule
     ]
 })
 export class AppModuleShared {

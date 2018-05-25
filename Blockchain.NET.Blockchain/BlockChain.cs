@@ -385,6 +385,14 @@ namespace Blockchain.NET.Blockchain
             }
         }
 
+        public List<Block> GetBlocks(int blockHeight, int blockCount = 250)
+        {
+            using (BlockchainDbContext db = new BlockchainDbContext())
+            {
+                return db.Blocks.OrderByDescending(b => b.Height).Where(b => b.Height <= blockHeight).Take(blockCount).ToList();
+            }
+        }
+
         public bool IsChainValid()
         {
             var lastBlock = LastBlock();
