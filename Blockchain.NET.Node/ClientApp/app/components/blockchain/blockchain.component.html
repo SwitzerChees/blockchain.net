@@ -3,17 +3,17 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-heading primary-color white-text">Allgemeine Infos</h3>
-                <ul class="list-group">
+                <ul class="list-group" *ngIf="generalInfo">
                     <li class="list-group-item">
-                        <span class="badge">10'000</span>
+                        <span class="badge">{{ generalInfo[0] }}</span>
                         Anzahl Blöcke:
                     </li>
                     <li class="list-group-item">
-                        <span class="badge">10'000</span>
-                        Letzter Block:
+                        <span class="badge">{{ generalInfo[1] }}</span>
+                        Anzahl Transaktionen:
                     </li>
                     <li class="list-group-item">
-                        <span class="badge">10'000</span>
+                        <span class="badge">{{ generalInfo[2] }}</span>
                         Letzte Transaktion:
                     </li>
                 </ul>
@@ -24,7 +24,10 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-heading primary-color white-text">Mining Status</h3>
-                <button type="button" class="btn btn-success btn-block">Aktiv</button>
+                <button type="button" class="btn btn-block" [class.btn-danger]="!minerState" [class.btn-success]="minerState" (click)="toggleMiner()"><span *ngIf="minerState">Aktiv</span><span *ngIf="!minerState">Inaktiv</span></button>
+                <blockquote style="margin-top:10px" class="bg-success" *ngIf="actualInformation.length > 3">
+                    <p class="text-info text-uppercase" *ngFor="let info of actualInformation">{{ info }}</p>
+                </blockquote>   
             </div>
         </div>
     </div>

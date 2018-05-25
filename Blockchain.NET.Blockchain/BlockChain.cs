@@ -60,6 +60,10 @@ namespace Blockchain.NET.Blockchain
 
         public long MiningReward { get; set; } = 1000;
 
+        public bool IsMining { get { return _isMining; } }
+
+        public ActualInformation ActualInformation { get; set; } = new ActualInformation();
+
         private bool _isMining;
         private List<Transaction> _memPool;
         private NetworkSynchronizer _networkSynchronizer;
@@ -87,6 +91,7 @@ namespace Blockchain.NET.Blockchain
         public void StopMining()
         {
             _isMining = false;
+            _nextBlock.IsMining = _isMining;
         }
 
         private void miningBlocks()
@@ -110,7 +115,7 @@ namespace Blockchain.NET.Blockchain
                             _nextBlock = lastBlock == null ? new Block(1, null, transactionsInBlock) : new Block(lastBlock.Height + 1, HashHelper.ByteArrayToHexString(lastBlock.GenerateHash()), transactionsInBlock);
                         }
                     }
-                    _nextBlock.MineBlock(CalculateDifficulty(_nextBlock));
+                    _nextBlock.MineBlock(CalculateDifficulty(_nextBlock), ActualInformation);
                     if (AddBlock(_nextBlock))
                         BlockchainConsole.WriteLine($"MINED BLOCK: {_nextBlock}", ConsoleEventType.MINEDBLOCK);
                     else
@@ -119,6 +124,7 @@ namespace Blockchain.NET.Blockchain
                 else
                     Task.Delay(500);
             }
+            ActualInformation.LiveMiningOutput = string.Empty;
         }
 
         private double CalculateDifficulty(Block block = null)
@@ -421,28 +427,20 @@ namespace Blockchain.NET.Blockchain
         #endregion
 
         #region Balance
-        public decimal GetBalanceOfAddress(string address)
+        public int TransactionsCount()
         {
-            decimal balance = 0;
+            using (BlockchainDbContext db = new BlockchainDbContext())
+            {
+                return db.Transactions.Count();
+            }
+        }
 
-            //var allBlocks = _rootDirInfo.GetFiles().ToList();
-
-            //foreach (var actBlock in allBlocks)
-            //{
-            //    var block = JsonConvert.DeserializeObject<Block>(File.ReadAllText(actBlock.FullName));
-            //    //foreach (var transaction in block.Transactions)
-            //    //{
-            //    //    if (transaction.FromAddress == address)
-            //    //    {
-            //    //        balance -= transaction.Amount;
-            //    //    }
-            //    //    if (transaction.ToAddress == address)
-            //    //    {
-            //    //        balance += transaction.Amount;
-            //    //    }
-            //    //}
-            //}
-            return balance;
+        public Transaction LastTransaction()
+        {
+            using (BlockchainDbContext db = new BlockchainDbContext())
+            {
+                return db.Transactions.Include(b => b.Block).Include(b => b.Inputs).Include(b => b.Outputs).OrderBy(b => b.BlockHeight).ThenBy(b => b.Id).LastOrDefault();
+            }
         }
         #endregion
     }

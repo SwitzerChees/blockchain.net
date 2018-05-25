@@ -31,6 +31,14 @@ namespace Blockchain.NET.Core.Mining
 
         private bool _isMining;
 
+        [JsonIgnore]
+        [NotMapped]
+        public bool IsMining
+        {
+            get { return _isMining; }
+            set { _isMining = value; }
+        }
+
         public Block() { }
 
         public Block(int height, string previousHash, List<Transaction> transactions)
@@ -64,7 +72,7 @@ namespace Blockchain.NET.Core.Mining
             return string.Empty;
         }
 
-        public void MineBlock(double difficulty)
+        public void MineBlock(double difficulty, ActualInformation actualInformation)
         {
             if (!_isMining)
             {
@@ -100,7 +108,8 @@ namespace Blockchain.NET.Core.Mining
                             if (totalHashesCounter % 200000 == 0)
                             {
                                 var currentElapsedTime = DateTime.Now - startTime;
-                                BlockchainConsole.WriteLive($"MINING BLOCK {Height} - ELAPSED TIME: {currentElapsedTime.TotalSeconds} Seconds, DIFFICULTY: {difficulty}, HASH RATE: {Convert.ToInt64(totalHashesCounter / currentElapsedTime.TotalSeconds)}/Seconds");
+                                actualInformation.LiveMiningOutput = $"MINING BLOCK: {Height}, ELAPSED TIME: {currentElapsedTime.TotalSeconds} Seconds, DIFFICULTY: {difficulty}, HASH RATE: {Convert.ToInt64(totalHashesCounter / currentElapsedTime.TotalSeconds)}/Seconds";
+                                BlockchainConsole.WriteLive(actualInformation.LiveMiningOutput);
                             }
                         }
                         if (taskHash != null)
