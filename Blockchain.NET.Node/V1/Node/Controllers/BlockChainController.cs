@@ -1,4 +1,5 @@
-﻿using Blockchain.NET.Core.Mining;
+﻿using Blockchain.NET.Blockchain.Network;
+using Blockchain.NET.Core.Mining;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;

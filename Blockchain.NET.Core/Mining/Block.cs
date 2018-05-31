@@ -81,12 +81,13 @@ namespace Blockchain.NET.Core.Mining
 
                 var totalHashesCounter = 0;
                 DateTime startTime = DateTime.Now;
+                DateTime lastUpdate = DateTime.Now;
 
                 Task[] miningTasks = new Task[1];
                 //#if DEBUG
                 //                Task[] miningTasks = new Task[1];
                 //#else
-                //                Task[] miningTasks = new Task[Environment.ProcessorCount];
+                //                                Task[] miningTasks = new Task[Environment.ProcessorCount];
                 //#endif
                 var unsigned = new byte[] { 0, 0 };
                 for (int i = 0; i < miningTasks.Length; i++)
@@ -105,11 +106,12 @@ namespace Blockchain.NET.Core.Mining
                             startNonce = startNonce + miningTasks.Length;
                             taskHash = GenerateHash(startNonce);
                             totalHashesCounter++;
-                            if (totalHashesCounter % 200000 == 0)
+                            if ((DateTime.Now - lastUpdate).TotalMilliseconds > 500)
                             {
                                 var currentElapsedTime = DateTime.Now - startTime;
                                 actualInformation.LiveMiningOutput = $"MINING BLOCK: {Height}, ELAPSED TIME: {currentElapsedTime.TotalSeconds} Seconds, DIFFICULTY: {difficulty}, HASH RATE: {Convert.ToInt64(totalHashesCounter / currentElapsedTime.TotalSeconds)}/Seconds";
                                 BlockchainConsole.WriteLive(actualInformation.LiveMiningOutput);
+                                lastUpdate = DateTime.Now;
                             }
                         }
                         if (taskHash != null)

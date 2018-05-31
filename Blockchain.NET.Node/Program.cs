@@ -28,37 +28,7 @@ namespace Blockchain.NET.Node
             BlockChain = new BlockChain(Wallet);
             BlockChain.StartSyncronizing();
 
-            BlockChain.StartMining();
-
-            //Console.WriteLine($"Blockchain is {(BlockChain.IsChainValid() ? "valid" : "not valid")}");
-
-            //NetworkConnector.IsMainNode = true;
-
-            //RSAHelper.test();
-            //Console.ReadLine();
-
-
-
-            //var difficulty = Math.Pow(2, 256);
-
-            //int nonce = 1;
-
-            //while(true)
-            //{
-            //    var blockHashBytes = HashHelper.Sha256Bytes(nonce.ToString());
-            //    var hashValue = BitConverter.ToDouble(blockHashBytes, 0);
-            //    if (hashValue >= 0 && hashValue < difficulty)
-            //    {
-            //        Console.WriteLine("test");
-            //    }
-            //    nonce++;
-            //}
-#if DEBUG
-#else
-            BlockChain.StartMining();
-#endif
-
-            //Console.ReadLine();
+            //BlockChain.StartMining();
 
             BuildWebHost(args).Run();
         }

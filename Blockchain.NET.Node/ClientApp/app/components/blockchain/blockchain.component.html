@@ -25,7 +25,7 @@
             <div class="card-body">
                 <h3 class="card-heading primary-color white-text">Mining Status</h3>
                 <button type="button" class="btn btn-block" [class.btn-danger]="!minerState" [class.btn-success]="minerState" (click)="toggleMiner()"><span *ngIf="minerState">Aktiv</span><span *ngIf="!minerState">Inaktiv</span></button>
-                <blockquote style="margin-top:10px" class="bg-success" *ngIf="actualInformation.length > 3">
+                <blockquote style="margin-top:10px" class="bg-success" *ngIf="actualInformation !== undefined && actualInformation.length > 3">
                     <p class="text-info text-uppercase" *ngFor="let info of actualInformation">{{ info }}</p>
                 </blockquote>   
             </div>
@@ -70,21 +70,26 @@
                 <table class="table table-responsive table-striped">
                     <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Empfänger</th>
                             <th>Menge</th>
-                            <th>Zeitstempel</th>
+                            <th>Typ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let i of range">
+                        <tr *ngFor="let transaction of loadedTransactions">
                             <td>
-                                x1132432fdsghv34t32r23432432423
+                                {{ transaction.id }}
                             </td>
                             <td>
-                                {{ i }}
+                                <span title="{{ transaction.receiver }}">{{ transaction.receiver | slice:0:15 }}...</span> 
                             </td>
                             <td>
-                                04.05.2018 13:46
+                                {{ transaction.amount }}
+                            </td>
+                            <td>
+                                <span *ngIf="!transaction.isCoinBase" class="glyphicon glyphicon-transfer text-danger" aria-hidden="true"></span>
+                                <span *ngIf="transaction.isCoinBase" class="glyphicon glyphicon-bitcoin text-success" aria-hidden="true"></span>
                             </td>
                         </tr>
                     </tbody>

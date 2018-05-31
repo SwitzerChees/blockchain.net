@@ -23,6 +23,8 @@ namespace Blockchain.NET.Blockchain.Network
         public bool IsSyncing { get; set; }
         private static Random rnd = new Random();
 
+        public static string NodeUrl { get; set; }
+
         public List<NodeConnection> Connections
         {
             get { return _connections; }
@@ -89,9 +91,9 @@ namespace Blockchain.NET.Blockchain.Network
         {
             while (true)
             {
-                if (_connections.Count < 5)
+                if (_connections.Count < 5 && !string.IsNullOrEmpty(NodeUrl))
                 {
-                    foreach (var node in _nodeList.Nodes.Where(n => !_connections.Select(c => c.NodeAddress).Contains(n.NodeAddress)))
+                    foreach (var node in _nodeList.Nodes.Where(n => !_connections.Select(c => c.NodeAddress).Contains(n.NodeAddress) && !NodeUrl.Contains(n.NodeAddress)))
                     {
                         if (node.LastConnectionAttempt.HasValue)
                         {

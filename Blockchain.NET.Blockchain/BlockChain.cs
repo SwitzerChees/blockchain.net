@@ -91,7 +91,8 @@ namespace Blockchain.NET.Blockchain
         public void StopMining()
         {
             _isMining = false;
-            _nextBlock.IsMining = _isMining;
+            if (_nextBlock != null)
+                _nextBlock.IsMining = _isMining;
         }
 
         private void miningBlocks()
@@ -132,7 +133,7 @@ namespace Blockchain.NET.Blockchain
             if (block == null)
                 block = LastBlock();
             if (block == null || block.Height == 1)
-                return 170;
+                return 164.5;
             else
             {
                 if (block != null && block.Height > 1 && block.Height % DifficultyCorrectureInterval == 1)
@@ -238,14 +239,14 @@ namespace Blockchain.NET.Blockchain
                                         if (actTransaction.Inputs != null)
                                             inputAddresses.AddRange(actTransaction.Inputs.Select(i => i.Key));
                                     }
-                                    foreach (var transaction in block.Transactions)
+                                    foreach (var transaction in block.Transactions.Skip(1))
                                     {
                                         if (!transaction.Verify())
                                         {
                                             transactionsValid = false;
                                             break;
                                         }
-                                        else if (inputAddresses.Any(i => transaction.Inputs.Select(ip => ip.Key).Contains(i)))
+                                        else if (inputAddresses.Any(i => transaction.Outputs.Select(ip => ip.Key).Contains(i)))
                                         {
                                             transactionsValid = false;
                                             break;
@@ -396,6 +397,14 @@ namespace Blockchain.NET.Blockchain
             using (BlockchainDbContext db = new BlockchainDbContext())
             {
                 return db.Blocks.OrderByDescending(b => b.Height).Where(b => b.Height <= blockHeight).Take(blockCount).ToList();
+            }
+        }
+
+        public List<Transaction> GetTransactions(int transactionHeight, int blockCount = 250)
+        {
+            using (BlockchainDbContext db = new BlockchainDbContext())
+            {
+                return db.Transactions.Include(t => t.Inputs).Include(t => t.Outputs).OrderByDescending(b => b.Id).Where(b => b.Id <= transactionHeight).Take(blockCount).ToList();
             }
         }
 
