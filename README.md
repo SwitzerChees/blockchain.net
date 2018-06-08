@@ -12,4 +12,4 @@ Das Angular Frontend soll folgendes enthalten:
 * Liste mit den letzten Transaktionen
 
 ## UX Design
-* Der Entwurf für das UX Design ist unter **docs** zu finden
+* Der UX Design Entwurf ist unter **docs** zu finden
