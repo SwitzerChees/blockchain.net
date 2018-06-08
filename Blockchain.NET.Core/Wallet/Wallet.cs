@@ -130,7 +130,7 @@ namespace Blockchain.NET.Core.Wallet
                         Message = transaction.Data == null ? string.Empty : Encoding.Unicode.GetString(transaction.Data),
                         BlockHeight = transaction.BlockHeight,
                         Outputs = transaction.Outputs.Select(o => new IOView() { Key = o.Key, Amount = o.Amount }).ToArray(),
-                        Amount = transaction.Inputs == null || transaction.Inputs.Count == 0 ? transaction.Outputs.Select(o => o.Amount).Sum() : isIncome ? transaction.Outputs.Select(o => o.Amount).Sum() : -transaction.Outputs.Where(o => !walletAddresses.Contains(o.Key)).Select(o => o.Amount).Sum(),
+                        Amount = transaction.Inputs == null || transaction.Inputs.Count == 0 ? transaction.Outputs.Select(o => o.Amount).Sum() : isIncome ? transaction.Outputs.Select(o => o.Amount).Sum() - transaction.Outputs.Last().Amount : - transaction.Outputs.Where(o => !walletAddresses.Contains(o.Key)).Select(o => o.Amount).Sum(),
                         IsIncome = isIncome
                     });
                 }

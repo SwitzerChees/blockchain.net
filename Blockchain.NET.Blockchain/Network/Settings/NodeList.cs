@@ -10,7 +10,11 @@ namespace Blockchain.NET.Blockchain.Network.Settings
     {
         public List<NetworkNode> Nodes { get; set; } = new List<NetworkNode>();
 
-        private static string _configName = "nodelist.json";
+#if DEBUG
+       private static string _configName = "nodelist.json";
+#else
+        private static string _configName = "nodelist.prod.json";
+#endif
         private static string _rootPath = "Data";
 
         public NodeList()

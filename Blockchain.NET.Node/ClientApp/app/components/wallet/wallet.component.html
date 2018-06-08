@@ -35,28 +35,34 @@
         </form>
     </div>
 </div>
+<div class="container-table">
+    <div class="row">
+        <div class="col-xs-12">
+            <h3>Transaktionsverlauf</h3>
+            <table class='table table-responsive' *ngIf="transactions">
+                <thead>
+                    <tr>
+                        <th>I/O</th>
+                        <th>Inputs</th>
+                        <th>Nachricht</th>
+                        <th>Block</th>
+                        <th>Outputs</th>
+                        <th>Betrag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let transaction of transactions">
+                        <td><span *ngIf="transaction.isIncome === false" class="glyphicon glyphicon-export text-danger" aria-hidden="true"></span><span *ngIf="transaction.isIncome == true" class="glyphicon glyphicon-import text-success" aria-hidden="true"></span> </td>
+                        <td><ul><li *ngFor="let input of transaction.inputs; index as i; trackBy: trackByFn"><span class="text-danger" title="{{input.amount}}">{{input.key}}</span></li></ul></td>
+                        <td>{{ transaction.message}}</td>
+                        <td>{{ transaction.blockHeight }}</td>
+                        <td><ul><li *ngFor="let output of transaction.outputs; index as i; trackBy: trackByFn"><span class="text-success" title="{{output.amount}}">{{output.key}}</span></li></ul></td>
+                        <td>{{ transaction.amount}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 
-<h3>Transaktionsverlauf</h3>
-<table class='table table-responsive' *ngIf="transactions">
-    <thead>
-        <tr>
-            <th>I/O</th>
-            <th>Inputs</th>
-            <th>Nachricht</th>
-            <th>Block</th>
-            <th>Outputs</th>
-            <th>Betrag</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let transaction of transactions">
-            <td><span *ngIf="transaction.isIncome === false" class="glyphicon glyphicon-export text-danger" aria-hidden="true"></span><span *ngIf="transaction.isIncome == true" class="glyphicon glyphicon-import text-success" aria-hidden="true"></span> </td>
-            <td><ul><li *ngFor="let input of transaction.inputs; index as i; trackBy: trackByFn"><span class="text-danger" title="{{input.amount}}">{{input.key}}</span></li></ul></td>
-            <td>{{ transaction.message}}</td>
-            <td>{{ transaction.blockHeight }}</td>
-            <td><ul><li *ngFor="let output of transaction.outputs; index as i; trackBy: trackByFn"><span class="text-success" title="{{output.amount}}">{{output.key}}</span></li></ul></td>
-            <td>{{ transaction.amount}}</td>
-        </tr>
-    </tbody>
-</table>

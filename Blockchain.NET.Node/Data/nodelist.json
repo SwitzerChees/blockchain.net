@@ -1,16 +1,4 @@
 {
   "Nodes": [
-    {
-      "NodeAddress": "https://blockchaindotnet1.azurewebsites.net/",
-      "LastConnectionAttempt": "2018-03-24T14:01:59.5280017+01:00"
-    },
-    {
-      "NodeAddress": "https://blockchaindotnet2.azurewebsites.net/",
-      "LastConnectionAttempt": "2018-03-24T14:01:59.5280017+01:00"
-    },
-    {
-      "NodeAddress": "https://blockchaindotnet3.azurewebsites.net/",
-      "LastConnectionAttempt": "2018-03-24T14:01:59.5280017+01:00"
-    }
   ]
 }

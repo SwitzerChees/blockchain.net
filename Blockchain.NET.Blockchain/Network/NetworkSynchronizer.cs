@@ -135,40 +135,47 @@ namespace Blockchain.NET.Blockchain.Network
         {
             while (IsSyncing)
             {
-                if (_isBlockchainSynced)
+                try
                 {
-                    var lastBlock = _blockChain.LastBlock();
-                    var nextBlockHeight = lastBlock == null ? 1 : _blockChain.LastBlock().Height + 1;
-                    var resultRemoteChainStates = new List<Tuple<NodeConnection, int>>();
-                    foreach (var connection in _connections.ToList())
+                    if (_isBlockchainSynced)
                     {
-                        var lastBlockHeight = await connection.LastBlockHeight();
-                        if (lastBlockHeight > nextBlockHeight)
+                        var lastBlock = _blockChain.LastBlock();
+                        var nextBlockHeight = lastBlock == null ? 1 : lastBlock.Height + 1;
+                        var resultRemoteChainStates = new List<Tuple<NodeConnection, int>>();
+                        foreach (var connection in _connections.ToList())
                         {
-                            resultRemoteChainStates.Add(new Tuple<NodeConnection, int>(connection, lastBlockHeight));
-                            break;
+                            var lastBlockHeight = await connection.LastBlockHeight();
+                            if (lastBlock == null || lastBlockHeight >  lastBlock.Height)
+                            {
+                                resultRemoteChainStates.Add(new Tuple<NodeConnection, int>(connection, lastBlockHeight));
+                                break;
+                            }
                         }
-                    }
-                    if (resultRemoteChainStates.Count > 0)
-                    {
-                        IsSynced = false;
-                        var from = nextBlockHeight;
-                        var to = resultRemoteChainStates.Select(t => t.Item2).Max();
-                        loadBlocks(resultRemoteChainStates, from, to);
+                        if (resultRemoteChainStates.Count > 0)
+                        {
+                            IsSynced = false;
+                            var from = nextBlockHeight;
+                            var to = resultRemoteChainStates.Select(t => t.Item2).Max();
+                            loadBlocks(resultRemoteChainStates, from, to);
+                        }
+                        else
+                        {
+                            IsSynced = true;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                await Task.Delay(1000);
+                                if (!IsSyncing)
+                                    break;
+                            }
+                        }
                     }
                     else
-                    {
-                        IsSynced = true;
-                        for (int i = 0; i < 8; i++)
-                        {
-                            await Task.Delay(1000);
-                            if (!IsSyncing)
-                                break;
-                        }
-                    }
+                        await Task.Delay(500);
                 }
-                else
-                    await Task.Delay(500);
+                catch (Exception exc)
+                {
+                    _blockChain.ActualInformation = new ActualInformation() { LiveMiningOutput = $"Fehler,SyncBLockThread,{exc.Message},Fehler" };
+                }
             }
         }
 
@@ -197,7 +204,8 @@ namespace Blockchain.NET.Blockchain.Network
                     blocksToSave.AddRange(taskResult);
                 }
             }
-            blocksToSave = blocksToSave.OrderBy(b => b.Height).ToList();
+            blocksToSave = blocksToSave.OrderBy(b => b.Height).GroupBy(x => x.Height).Select(x => x.First()).ToList();
+            //blocksToSave = blocksToSave.OrderBy(b => b.Height).ToList();
             _blockChain.AddBlocks(blocksToSave);
         }
 
@@ -205,29 +213,36 @@ namespace Blockchain.NET.Blockchain.Network
         {
             while (IsSyncing)
             {
-                var localMempoolHashes = _blockChain.MemPool.Select(t => t.GenerateHash());
-                var resultRemoteChainStates = new List<Tuple<NodeConnection, List<string>>>();
-                foreach (var connection in _connections.ToList())
+                try
                 {
-                    var mempoolHashes = await connection.MempoolHashes();
-
-                    if (mempoolHashes != null)
+                    var localMempoolHashes = _blockChain.MemPool.Select(t => t.GenerateHash());
+                    var resultRemoteChainStates = new List<Tuple<NodeConnection, List<string>>>();
+                    foreach (var connection in _connections.ToList())
                     {
-                        var notExistingTransactions = mempoolHashes.Where(mp => !localMempoolHashes.Any(lmp => lmp == mp)).ToList();
+                        var mempoolHashes = await connection.MempoolHashes();
 
-                        if (notExistingTransactions.Count > 0)
+                        if (mempoolHashes != null)
                         {
-                            resultRemoteChainStates.Add(new Tuple<NodeConnection, List<string>>(connection, notExistingTransactions));
-                            break;
+                            var notExistingTransactions = mempoolHashes.Where(mp => !localMempoolHashes.Any(lmp => lmp == mp)).ToList();
+
+                            if (notExistingTransactions.Count > 0)
+                            {
+                                resultRemoteChainStates.Add(new Tuple<NodeConnection, List<string>>(connection, notExistingTransactions));
+                                break;
+                            }
                         }
                     }
+                    loadTransactions(resultRemoteChainStates);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        await Task.Delay(1000);
+                        if (!IsSyncing)
+                            break;
+                    }
                 }
-                loadTransactions(resultRemoteChainStates);
-                for (int i = 0; i < 8; i++)
+                catch (Exception exc)
                 {
-                    await Task.Delay(1000);
-                    if (!IsSyncing)
-                        break;
+                    _blockChain.ActualInformation = new ActualInformation() { LiveMiningOutput = $"Fehler,SynTransactionsThread,{exc.Message},Fehler" };
                 }
             }
         }
@@ -256,39 +271,56 @@ namespace Blockchain.NET.Blockchain.Network
         {
             while (IsSyncing)
             {
-                var lastBlock = _blockChain.LastBlock();
-                if (lastBlock != null)
+                try
                 {
-                    var localBlockchainHash = _blockChain.BlockchainHash(lastBlock.Height);
-                    var notSynnchronChains = new List<NodeConnection>();
-                    foreach (var connection in _connections.ToList())
+                    while (true)
                     {
-                        var blockchainHash = await connection.BlockchainHash(lastBlock.Height);
-                        if (blockchainHash != localBlockchainHash)
+                        var validBlockChain = _blockChain.IsChainValid();
+                        if (validBlockChain != null)
                         {
-                            notSynnchronChains.Add(connection);
-                            break;
+                            _blockChain.RemoveBlocks(validBlockChain.Height);
                         }
+                        else
+                            break;
                     }
-                    if (notSynnchronChains.Count > 0)
+                    var lastBlock = _blockChain.LastBlock();
+                    if (lastBlock != null)
                     {
-                        IsSynced = false;
-                        _isBlockchainSynced = false;
-                        syncBlockchains(notSynnchronChains, lastBlock);
+                        var localBlockchainHash = _blockChain.BlockchainHash(lastBlock.Height);
+                        var notSynnchronChains = new List<NodeConnection>();
+                        foreach (var connection in _connections.ToList())
+                        {
+                            var blockchainHash = await connection.BlockchainHash(lastBlock.Height);
+                            if (blockchainHash != localBlockchainHash)
+                            {
+                                notSynnchronChains.Add(connection);
+                                break;
+                            }
+                        }
+                        if (notSynnchronChains.Count > 0)
+                        {
+                            IsSynced = false;
+                            _isBlockchainSynced = false;
+                            syncBlockchains(notSynnchronChains, lastBlock);
+                        }
+                        else
+                        {
+                            _isBlockchainSynced = true;
+                            for (int i = 0; i < 20; i++)
+                            {
+                                await Task.Delay(1000);
+                                if (!IsSyncing)
+                                    break;
+                            }
+                        }
                     }
                     else
-                    {
                         _isBlockchainSynced = true;
-                        for (int i = 0; i < 20; i++)
-                        {
-                            await Task.Delay(1000);
-                            if (!IsSyncing)
-                                break;
-                        }
-                    }
                 }
-                else
-                    _isBlockchainSynced = true;
+                catch (Exception exc)
+                {
+                    _blockChain.ActualInformation = new ActualInformation() { LiveMiningOutput = $"Fehler,SyncBlockchainsThread,{exc.Message},Fehler" };
+                }
             }
         }
 

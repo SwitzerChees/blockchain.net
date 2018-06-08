@@ -28,6 +28,8 @@ namespace Blockchain.NET.Node
             BlockChain = new BlockChain(Wallet);
             BlockChain.StartSyncronizing();
 
+
+            //var isValid = BlockChain.IsChainValid();
             //BlockChain.StartMining();
 
             BuildWebHost(args).Run();
